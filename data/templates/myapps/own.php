@@ -3,7 +3,7 @@
 </div>
 
 <div>
-<?php foreach($own_apps as $app):?>
+<?php $counter=0;foreach($own_apps as $app):?>
 <div class="media app-list-item col-md-6">
   <p class="pull-left">
     <a href="<?=url("/app?id={$app->getId()}")?>">

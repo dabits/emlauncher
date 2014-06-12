@@ -49,6 +49,9 @@ $emlauncher_config = array(
 			'allowed_mailaddr_pattern' => '/@klab\.com$/',
 			),
 
+		/** ストレージ指定 */
+		'storage'=>'S3',
+
 		/** AWSの設定 */
 		'aws' => array(
 			/**
@@ -64,6 +67,16 @@ $emlauncher_config = array(
 			'bucket_name' => 'emlauncher',
 			),
 		),
+
+		/** ローカルパスに保存する場合
+		'storage'=>'HDD',
+		'hdd' => array(
+			// ファイルを保存するパスを指定
+			'uploadpath'=>getenv('DOCUMENT_ROOT').'/uploaded/',
+			// 保存されたファイルを参照するURLの元
+			'uploadurl'=>'/uploaded/',
+		),
+		**/
 	);
 
 /**
