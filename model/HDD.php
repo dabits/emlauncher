@@ -2,6 +2,10 @@
 require_once APP_ROOT.'/model/Config.php';
 
 class HDD {
+	
+	const URL_TOKEN_PREFIX = 'hdd_file_token_';
+	const URL_FILE_PREFIX = 't_';
+	
 
 	protected function __construct()
 	{
@@ -58,6 +62,15 @@ class HDD {
 
 	public static function url($key,$expires=null)
 	{
+		// create dummy url.
+		if($expires){
+			$token = Random::string(16);
+			$file_info = pathinfo($key);
+			$new_key = $file_info['dirname'] . '/' . self::URL_FILE_PREFIX . $token . '.' . $file_info['extension'];
+			$expire = strtotime($expires, 0);
+			mfwMemcache::set(self::URL_TOKEN_PREFIX.$token,$key,$expire);
+			$key = $new_key;
+		}
 		$config = Config::get('hdd');
 		return $config['uploadurl'].$key;
 	}
