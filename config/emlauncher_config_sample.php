@@ -72,9 +72,9 @@ $emlauncher_config = array(
 		'storage'=>'HDD',
 		'hdd' => array(
 			// ファイルを保存するパスを指定
-			'uploadpath'=>getenv('DOCUMENT_ROOT').'/uploaded/',
+			'uploadpath' => APP_ROOT . '/web/uploaded/',
 			// 保存されたファイルを参照するURLの元
-			'uploadurl'=>'/uploaded/',
+			'uploadurl'=> (isset($_SERVER['HTTPS'])?'https':'http') . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']) . '/uploaded/',
 		),
 		**/
 	);
