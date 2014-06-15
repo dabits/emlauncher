@@ -13,7 +13,7 @@ class topActions extends MainActions
 		$max_page = ceil($app_count/self::LINE_IN_PAGE);
 		$offset = (max(0,min($current_page,$max_page)-1)) * self::LINE_IN_PAGE;
 
-		$apps = ApplicationDb::selectByUpdateOrderWithLimit($offset, self::LINE_IN_PAGE);
+		$apps = ApplicationDb::selectVisibleAppsByUpdateOrderWithLimit($this->login_user, $offset, self::LINE_IN_PAGE);
 
 		$comments = CommentDb::selectCountsByAppIds($apps->getColumnArray('id'));
 

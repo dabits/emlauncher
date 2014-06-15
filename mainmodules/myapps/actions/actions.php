@@ -34,4 +34,13 @@ class myappsActions extends MainActions
 		return $this->build($params);
 	}
 
+	public function executeTest()
+	{
+		$test_apps = ApplicationDb::selectTestApps($this->login_user);
+		$params = array(
+			'test_apps' => $test_apps,
+			);
+		return $this->build($params);
+	}
+
 }

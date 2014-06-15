@@ -182,36 +182,43 @@ h3 {
   border: 1px solid #9a0200;
 }
 
-.edit-owner .form-control > button {
+.edit-owner .form-control > button,
+.edit-tester .form-control > button {
   margin-right: 10px;
 }
-.edit-owner .form-control > button > i:before{
+.edit-owner .form-control > button > i:before,
+.edit-tester .form-control > button > i:before{
   content: "\f00d";
 }
 
-.edit-owner.delete .form-control {
+.edit-owner.delete .form-control,
+.edit-tester.delete .form-control {
   color: #b94a48;
   background-color: #f2dede;
   border-color: #eed3d7;
   text-decoration: line-through;
 }
-.edit-owner.delete .form-control > button > i:before{
+.edit-owner.delete .form-control > button > i:before,
+.edit-tester.delete .form-control > button > i:before{
   content: "\f10c";
 }
 
-.edit-owner.add .form-control {
+.edit-owner.add .form-control,
+.edit-tester.add .form-control {
   background-color: #dff0d8;
   border-color: #d6e9c6;
   color: #468847;
 }
 
-#add-owner button {
+#add-owner button,
+#add-tester button {
   float: left;
   height: 38px;
   margin-bottom: -38px;
   padding: 0 12px;
 }
-#add-owner input[type="text"] {
+#add-owner input[type="text"],
+#add-tester input[type="text"] {
   padding-left: 38px;
 }
 

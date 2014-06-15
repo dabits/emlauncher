@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__.'/ApplicationOwner.php';
+require_once __DIR__.'/ApplicationTester.php';
 require_once __DIR__.'/Tag.php';
 require_once __DIR__.'/InstallLog.php';
 require_once __DIR__.'/Random.php';
@@ -13,6 +14,7 @@ class Application extends mfwObject {
 	const SET_CLASS = 'ApplicationSet';
 
 	protected $owners = null;
+	protected $testers = null;
 	protected $tags = null;
 	protected $install_users = null;
 
@@ -130,9 +132,10 @@ class Application extends mfwObject {
 	public function setOwners(array $owner_mails,$con=null)
 	{
 		$cur_mails = $this->getOwners()->getMailArray();
+		$test_mails = $this->getTesters()->getMailArray();
 
 		$delete = array_diff($cur_mails,$owner_mails);
-		$add = array_diff($owner_mails,$cur_mails);
+		$add = array_diff($owner_mails,$cur_mails,$test_mails);
 
 		if(!empty($delete)){
 			ApplicationOwnerDb::deleteOwner($this->getId(),$delete,$con);
@@ -141,6 +144,36 @@ class Application extends mfwObject {
 			ApplicationOwnerDb::addOwner($this->getId(),$add,$con);
 		}
 		$this->owners = null;
+	}
+	
+	public function getTesters()
+	{
+		if($this->testers===null){
+			$this->testers = ApplicationTesterDb::selectByAppId($this->getId());
+		}
+		return $this->testers;
+	}
+	public function isTester(User $user)
+	{
+		$testers = $this->getTesters();
+		$k = $testers->searchPK('tester_mail',$user->getMail());
+		return $k!==null;
+	}
+	public function setTesters(array $tester_mails,$con=null)
+	{
+		$cur_mails = $this->getTesters()->getMailArray();
+		$own_mails = $this->getTesters()->getMailArray();
+
+		$delete = array_diff($cur_mails,$tester_mails);
+		$add = array_diff($tester_mails,$cur_mails,$own_mails);
+
+		if(!empty($delete)){
+			ApplicationTesterDb::deleteTester($this->getId(),$delete,$con);
+		}
+		if(!empty($add)){
+			ApplicationTesterDb::addTester($this->getId(),$add,$con);
+		}
+		$this->testers = null;
 	}
 
 	public function getTags()
@@ -339,19 +372,59 @@ class ApplicationDb extends mfwObjectDb {
 		return static::selectSet($query);
 	}
 
+	public static function selectVisibleAppsByUpdateOrderWithLimit($user, $offset, $count)
+	{
+		$ownapp_ids = static::getOwnAppIds($user);
+		$testapp_ids = static::getTestAppIds($user);
+		$ids = array_merge($ownapp_ids, $testapp_ids);
+		$bind = array();
+		$pf = static::makeInPlaceholder($ids,$bind);
+		$query = sprintf('WHERE id IN (%s) ORDER BY date_to_sort DESC LIMIT %d, %d', $pf, $offset, $count);
+		return static::selectSet($query,$bind);
+	}
+
 	public static function selectOwnApps($user)
+	{
+		$ids = static::getOwnAppIds($user);
+		if(!$ids) return new ApplicationSet();
+		$bind = array();
+		$pf = static::makeInPlaceholder($ids,$bind);
+		return static::selectSet("WHERE id IN ($pf) ORDER BY id DESC",$bind);
+	}
+
+	public static function selectTestApps($user)
+	{
+		$ids = static::getTestAppIds($user);
+		if(!$ids) return new ApplicationSet();
+		$bind = array();
+		$pf = static::makeInPlaceholder($ids,$bind);
+		return static::selectSet("WHERE id IN ($pf) ORDER BY id DESC",$bind);
+	}
+	
+	private static function getOwnAppIds($user)
 	{
 		$aos = ApplicationOwnerDb::selectByOwnerMail($user->getMail());
 		if($aos->count()==0){
-			return new ApplicationSet();
+			return array();
 		}
 		$ids = array();
 		foreach($aos as $ao){
 			$ids[] = $ao->getAppId();
 		}
-		$bind = array();
-		$pf = static::makeInPlaceholder($ids,$bind);
-		return static::selectSet("WHERE id IN ($pf) ORDER BY id DESC",$bind);
+		return $ids;
+	}
+	
+	private static function getTestAppIds($user)
+	{
+		$ats = ApplicationTesterDb::selectByTesterMail($user->getMail());
+		if($ats->count()==0){
+			return array();
+		}
+		$ids = array();
+		foreach($ats as $at){
+			$ids[] = $at->getAppId();
+		}
+		return $ids;
 	}
 }
 

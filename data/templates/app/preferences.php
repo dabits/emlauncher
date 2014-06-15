@@ -180,6 +180,50 @@
       </form>
     </div>
 
+    <div class="well">
+      <form id="testers" class="form-horizontal" method="post" action="<?=url('/app/preferences_update_testers')?>">
+        <input type="hidden" name="id" value="<?=$app->getId()?>">
+        <legend>Testers</legend>
+
+<?php foreach($app->getTesters() as $tester):?>
+<?php   if($tester->getTesterMail()===$login_user->getMail()) continue; ?>
+        <div class="form-group edit-tester">
+          <div class="col-xs-12">
+            <div class="form-control" readonly="readonly">
+              <button type="button" class="close pull-left"><i class="fa"></i></button>
+              <span><?=htmlspecialchars($tester->getTesterMail())?></span>
+              <input type="hidden" name="testers[]" value="<?=htmlspecialchars($tester->getTesterMail())?>">
+            </div>
+          </div>
+        </div>
+<?php endforeach ?>
+
+        <div id="tester-form-template" class="form-group edit-tester add hidden">
+          <div class="col-xs-12">
+            <div class="form-control" readonly="readonly">
+              <button type="button" class="close pull-left"><i class="fa"></i></button>
+              <span></span>
+              <input type="hidden">
+            </div>
+          </div>
+        </div>
+
+        <div id="add-tester" class="form-group">
+          <div class="col-xs-12">
+            <button class="close"><i class="fa fa-plus"></i></button>
+            <input type="text" class="form-control" name="testers[]">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="col-xs-12">
+            <button class="btn btn-primary"><i class="fa fa-save"></i> Update</button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
   </div>
 </div>
 
@@ -302,6 +346,42 @@ $('#add-owner button').on('click',function(event){
   $('span',$clone).text(new_owner);
   $('input',$clone).attr('name','owners[]');
   $('input',$clone).val(new_owner);
+  $clone.removeClass('hidden');
+  $clone.removeAttr('id');
+  $template.before($clone);
+  $(this).next().val(null);
+  return false;
+});
+
+// tester form
+$('.edit-tester button').on('click',function(event){
+  var $parent = $(this).parent().parent().parent();
+  if($parent.hasClass('add')){
+    $parent.hide('fast',function(){$parent.remove();});
+  }
+  else if($parent.hasClass('delete')){
+    $parent.removeClass('delete');
+    $('input',$parent).attr('name','testers[]');
+  }
+  else{
+    $parent.addClass('delete')
+    $('input',$parent).removeAttr('name');
+  }
+  return false;
+});
+
+// initialize form
+$('.edit-tester').each(function(i,val){
+  $('input',val).val($('span',val).text());
+});
+
+$('#add-tester button').on('click',function(event){
+  var $template = $('#tester-form-template');
+  var $clone = $template.clone(true);
+  var new_tester = $(this).next().val();
+  $('span',$clone).text(new_tester);
+  $('input',$clone).attr('name','testers[]');
+  $('input',$clone).val(new_tester);
   $clone.removeClass('hidden');
   $clone.removeAttr('id');
   $template.before($clone);

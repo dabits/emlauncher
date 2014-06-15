@@ -40,6 +40,7 @@
             <ul class="dropdown-menu">
               <li><a href="<?=url('/myapps/installed')?>">Installed Apps</a></li>
               <li><a href="<?=url('/myapps/own')?>">Own Apps</a></li>
+              <li><a href="<?=url('/myapps/test')?>">Test Apps</a></li>
             </ul>
           </li>
           <li><a href="<?=url('/doc/api')?>">API doc</a></li>

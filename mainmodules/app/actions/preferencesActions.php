@@ -123,4 +123,30 @@ class preferencesActions extends appActions
 		return $this->redirect("/app/preferences?id={$this->app->getId()}#owners");
 	}
 
+	public function executePreferences_update_testers()
+	{
+		$testers = mfwRequest::param('testers');
+		$testers = array_filter($testers,'strlen');
+
+		// 自分自身は除外する
+		$testers = array_diff($testers, array($this->login_user->getMail()));
+
+		$con = mfwDBConnection::getPDO();
+		$con->beginTransaction();
+		try{
+			$this->app = ApplicationDb::retrieveByPkForUpdate($this->app->getId(),$con);
+
+			$this->app->setTesters($testers,$con);
+
+			$con->commit();
+		}
+		catch(Exception $e){
+			error_log(__METHOD__.'('.__LINE__.'): '.get_class($e).":{$e->getMessage()}");
+			$con->rollback();
+			throw $e;
+		}
+
+		return $this->redirect("/app/preferences?id={$this->app->getId()}#testers");
+	}
+
 }
