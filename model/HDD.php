@@ -7,50 +7,53 @@ class HDD {
 	{
 		$config = Config::get('hdd');
 	}
+	
+	protected static function generate_file_path($key)
+	{
+		$config = Config::get('hdd');
+		$dir_name = $config['uploadpath'] . dirname($key);
+		
+		if(!is_dir($dir_name)){
+			mkdir($dir_name, 0755, true);
+		}
+		return $config['uploadpath'] . $key;
+	}
+	
+	protected static function get_file_path($key)
+	{
+		$config = Config::get('hdd');
+		return $config['uploadpath'] . $key;
+	}
 
 	public static function uploadData($key,$data,$type,$acl='private')
 	{
-		$config = Config::get('hdd');
+		$file_path = self::generate_file_path($key);
 
 		switch(get_class($data))
 		{
 		case 'Imagick':
-			$filename = $config['uploadpath'].$key;
-			if (!file_exists(dirname($filename)))
-				mkdir(dirname($filename), 0755, true);
-			return $data->writeImage($filename);
+			return $data->writeImage($file_path);
 		}
 		return false;
 	}
 
 	public static function uploadFile($key,$filename,$type,$acl='private')
 	{
-		$config = Config::get('hdd');
-		if (!file_exists($filename) || filesize($filename) == 0)
-			return false;
-		if (!file_exists(dirname($config['uploadpath'].$key)))
-			mkdir(dirname($config['uploadpath'].$key), 0755, true);
-		copy($filename, $config['uploadpath'].$key);
-		return true;
+		if (!file_exists($filename) || filesize($filename) == 0) return false;
+		return copy($filename, self::generate_file_path($key));
 	}
 
 	public static function rename($srckey,$dstkey,$acl='private')
 	{
-		$config = Config::get('hdd');
-		if (file_exists($config['uploadpath'].$srckey)) {
-			if (file_exists($config['uploadpath'].$dstkey))
-				unlink($config['uploadpath'].$dstkey);
-			if (!file_exists(dirname($config['uploadpath'].$dstkey)))
-				mkdir(dirname($config['uploadpath'].$dstkey), 0755, true);
-			rename($config['uploadpath'].$srckey, $config['uploadpath'].$dstkey);
-		}
+		$src_file_path = self::get_file_path($srckey);
+		$dst_file_path = self::generate_file_path($dstkey);
+		return rename($src_file_path, $dst_file_path);
 	}
 
 	public static function delete($key)
 	{
-		$config = Config::get('hdd');
-		if (file_exists($config['uploadpath'].$key))
-			unlink($config['uploadpath'].$key);
+		$file_path = self::get_file_path($key);
+		return unlink($file_path);
 	}
 
 	public static function url($key,$expires=null)
