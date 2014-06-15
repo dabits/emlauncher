@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__.'/ApplicationOwner.php';
 require_once __DIR__.'/ApplicationTester.php';
+require_once __DIR__.'/UserPass.php';
 require_once __DIR__.'/Tag.php';
 require_once __DIR__.'/InstallLog.php';
 require_once __DIR__.'/Random.php';
@@ -133,15 +134,25 @@ class Application extends mfwObject {
 	{
 		$cur_mails = $this->getOwners()->getMailArray();
 		$test_mails = $this->getTesters()->getMailArray();
+		$user_mails = UserPassDb::selectAll()->getMailArray();
+		$config = Config::get('login');
 
 		$delete = array_diff($cur_mails,$owner_mails);
 		$add = array_diff($owner_mails,$cur_mails,$test_mails);
+		$regist = array_filter($add, function($mail) use ($user_mails, $config){
+			$valid = !in_array($mail, $user_mails);
+			$valid &= !$config['enable_google_auth'] || !preg_match($config['allowed_mailaddr_pattern'], $mail);
+			return $valid;
+		});
 
 		if(!empty($delete)){
 			ApplicationOwnerDb::deleteOwner($this->getId(),$delete,$con);
 		}
 		if(!empty($add)){
 			ApplicationOwnerDb::addOwner($this->getId(),$add,$con);
+		}
+		if(!empty($regist) && $config['enable_password']){
+			UserPassDb::addUser($regist,$con);
 		}
 		$this->owners = null;
 	}
@@ -163,15 +174,25 @@ class Application extends mfwObject {
 	{
 		$cur_mails = $this->getTesters()->getMailArray();
 		$own_mails = $this->getTesters()->getMailArray();
+		$user_mails = UserPassDb::selectAll()->getMailArray();
+		$config = Config::get('login');
 
 		$delete = array_diff($cur_mails,$tester_mails);
 		$add = array_diff($tester_mails,$cur_mails,$own_mails);
+		$regist = array_filter($add, function($mail) use ($user_mails, $config){
+			$valid = !in_array($mail, $user_mails);
+			$valid &= !$config['enable_google_auth'] || !preg_match($config['allowed_mailaddr_pattern'], $mail);
+			return $valid;
+		});
 
 		if(!empty($delete)){
 			ApplicationTesterDb::deleteTester($this->getId(),$delete,$con);
 		}
 		if(!empty($add)){
 			ApplicationTesterDb::addTester($this->getId(),$add,$con);
+		}
+		if(!empty($regist) && $config['enable_password']){
+			UserPassDb::addUser($regist,$con);
 		}
 		$this->testers = null;
 	}

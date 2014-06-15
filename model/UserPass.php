@@ -86,6 +86,10 @@ class UserPassSet extends mfwObjectSet {
 	{
 		return new UserPass($row);
 	}
+	public function getMailArray()
+	{
+		return $this->getColumnArray('mail');
+	}
 	protected function unsetCache($id)
 	{
 		parent::unsetCache($id);
@@ -99,9 +103,28 @@ class UserPassDb extends mfwObjectDb {
 	const TABLE_NAME = 'user_pass';
 	const SET_CLASS = 'UserPassSet';
 
+	public static function selectAll()
+	{
+		return static::selectSet('');
+	}
+
 	public static function selectByEmail($email)
 	{
 		return static::selectOne('WHERE mail = ?',array($email));
+	}
+
+	public static function addUser($users,$con=null)
+	{
+		$bind = array(':passhash' => NULL);
+		$values = array();
+		foreach($users as $k=>$v){
+			$key = ":mail_$k";
+			$values[] = "($key,:passhash)";
+			$bind[$key] = $v;
+		}
+		$sql = 'INSERT INTO user_pass (mail,passhash) VALUES '
+			. implode(',',$values);
+		return mfwDBIBase::query($sql,$bind,$con);
 	}
 
 }
